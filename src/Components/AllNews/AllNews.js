@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import CircularProgressComponent from '../CircularProgress/CircularProgressComponent'
 import MainPage from '../MainPage/MainPage'
 import ErrorPage from '../ErrorPage/ErrorPage.js';
@@ -19,20 +19,19 @@ const AllNews = (props) => {
 
    var yMonth = Number(yesterday.getMonth()) + 1
    var yesterdayStr = yesterday.getFullYear() + "-" + yMonth + "-" + yesterday.getDate()
+   var url = 'https://newsapi.org/v2/everything?q=politics&from='+yesterdayStr+'&to='+todayStr+'&sortBy=popularity&apiKey=7ca94d9adb6b406593cd698d101b0ccf'
    
+   const newsApi = useCallback(() => {
+    fetch(url)
+    .then(response => response.json())
+    .then(json => { 
+        setNewsList({...json.articles})
+    }) 
+}, [url])
+
     useEffect( () =>{
         if(navigator.onLine )
         {
-            const newsApi = () => {
-                fetch('https://newsapi.org/v2/everything?q=politics&from='+yesterdayStr+'&to='+todayStr+'&sortBy=popularity&apiKey=7ca94d9adb6b406593cd698d101b0ccf')
-                .then(response => response.json())
-                .then(json => { 
-                    if(Object.keys(newsList).length === 0)
-                    {
-                        setNewsList({...json.articles})
-                    }
-                }) 
-            }
             newsApi()
         }
         else
@@ -40,7 +39,7 @@ const AllNews = (props) => {
             setConError(true)
         }
          
-    }, [newsList], [todayStr], [yesterdayStr])   
+    }, [newsApi])   
 
     const progressFuction = (progressVal) =>
     {
